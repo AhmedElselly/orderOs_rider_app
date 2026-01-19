@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { enableScreens } from "react-native-screens";
 import { LightTheme } from "./src/theme";
 import { Provider as PaperProvider } from "react-native-paper";
+import StatusScreen from "./src/screens/StatusScreen";
 
 enableScreens();
 Appearance.setColorScheme("light");
@@ -39,7 +40,10 @@ export default function App() {
       <PaperProvider theme={LightTheme}>
         <SafeAreaView style={{ backgroundColor: "#fff", flex: 1 }}>
           <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Navigator
+              initialRouteName="Status"
+              screenOptions={{ headerShown: false }}
+            >
               {/* {!riderId ? ( */}
               <Stack.Screen name="Register">
                 {(props) => (
@@ -48,10 +52,11 @@ export default function App() {
               </Stack.Screen>
               {/* ) : (
             <>
-              <Stack.Screen name="Status" component={StatusScreen} />
+              
               <Stack.Screen name="Job" component={JobScreen} />
             </>
           )} */}
+              <Stack.Screen name="Status" component={StatusScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaView>
