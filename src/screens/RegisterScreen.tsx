@@ -4,6 +4,9 @@ import { useMutation } from "@apollo/client/react";
 import { CREATE_RIDER } from "../api/mutations";
 import { StyleSheet, View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../slices";
+import { authenticate } from "../slices/riderSlice";
 
 type CreateRiderResult = {
   createRider: {
@@ -17,8 +20,11 @@ type CreateRiderVars = {
   name: string;
 };
 
-export default function RegisterScreen({ onRegistered }: any) {
+export default function RegisterScreen() {
+  const dispatch = useDispatch();
   const [name, setName] = useState<string>("");
+  const rider = useSelector((state: RootState) => state.riderReducer.rider);
+  console.log({ rider });
   const [createRider, { loading }] = useMutation<
     CreateRiderResult,
     CreateRiderVars
@@ -29,7 +35,8 @@ export default function RegisterScreen({ onRegistered }: any) {
     const id: string | null = res.data?.createRider.id || null;
     if (!id) return;
     await AsyncStorage.setItem("riderId", String(id));
-    onRegistered(id);
+    // onRegistered(id);
+    dispatch(authenticate({ rider: id }));
   };
 
   return (
@@ -49,7 +56,7 @@ export default function RegisterScreen({ onRegistered }: any) {
       <Button
         mode="elevated"
         textColor="#fff"
-        onPress={() => {}}
+        onPress={submit}
         style={styles.btn}
       >
         Register

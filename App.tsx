@@ -11,19 +11,24 @@ import { enableScreens } from "react-native-screens";
 import { LightTheme } from "./src/theme";
 import { Provider as PaperProvider } from "react-native-paper";
 import StatusScreen from "./src/screens/StatusScreen";
+import { Provider, useSelector } from "react-redux";
+import store, { RootState } from "./src/slices";
+import LoginScreen from "./src/screens/LoginScreen";
 
-enableScreens();
+// enableScreens();
 Appearance.setColorScheme("light");
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [riderId, setRiderId] = useState<string | null>(null);
+  // const [riderId, setRiderId] = useState<string | null>(null);
+  // const rider = useSelector((state: RootState) => state.riderReducer.rider);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     AsyncStorage.clear();
     AsyncStorage.getItem("riderId").then((id) => {
-      setRiderId(id);
+      // setRiderId(id);
+
       setLoading(false);
     });
   }, []);
@@ -32,35 +37,34 @@ export default function App() {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <StatusBar
-        barStyle={"dark-content"}
-        networkActivityIndicatorVisible
-        backgroundColor={"#fff"}
-      />
-      <PaperProvider theme={LightTheme}>
-        <SafeAreaView style={{ backgroundColor: "#fff", flex: 1 }}>
-          <NavigationContainer>
-            <Stack.Navigator
-              initialRouteName="Status"
-              screenOptions={{ headerShown: false }}
-            >
-              {/* {!riderId ? ( */}
-              <Stack.Screen name="Register">
-                {(props) => (
-                  <RegisterScreen {...props} onRegistered={setRiderId} />
-                )}
-              </Stack.Screen>
-              {/* ) : (
+      <Provider store={store}>
+        <StatusBar
+          barStyle={"dark-content"}
+          networkActivityIndicatorVisible
+          backgroundColor={"#fff"}
+        />
+        <PaperProvider theme={LightTheme}>
+          <SafeAreaView style={{ backgroundColor: "#fff", flex: 1 }}>
+            <NavigationContainer>
+              <Stack.Navigator
+                initialRouteName="Login"
+                screenOptions={{ headerShown: false }}
+              >
+                {/* {!riderId ? ( */}
+                <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen name="Login" component={LoginScreen} />
+                {/* ) : (
             <>
               
               <Stack.Screen name="Job" component={JobScreen} />
             </>
           )} */}
-              <Stack.Screen name="Status" component={StatusScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </SafeAreaView>
-      </PaperProvider>
+                <Stack.Screen name="Status" component={StatusScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </SafeAreaView>
+        </PaperProvider>
+      </Provider>
     </ApolloProvider>
   );
 }

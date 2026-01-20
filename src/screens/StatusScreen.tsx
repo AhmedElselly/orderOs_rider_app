@@ -8,6 +8,9 @@ import { useMutation, useQuery, useSubscription } from "@apollo/client/react";
 import { SET_STATUS } from "../api/mutations";
 import { RIDER_ASSIGNED } from "../api/subscriptions";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../slices";
+import { authenticate } from "../slices/riderSlice";
 
 // import { GET_RIDER } from "../api/rider.queries";
 // import { SET_STATUS } from "../api/rider.mutations";
@@ -15,25 +18,29 @@ import { useNavigation } from "@react-navigation/native";
 
 export default function StatusScreen() {
   const navigation = useNavigation<any>();
-  const [riderId, setRiderId] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const rider = useSelector((state: RootState) => state.riderReducer.rider);
 
   useEffect(() => {
-    AsyncStorage.getItem("riderId").then(setRiderId);
+    AsyncStorage.getItem("riderId").then((res) => {
+      console.log({ res });
+      dispatch(authenticate({ rider: res }));
+    });
   }, []);
 
-  if (!riderId) {
+  if (!rider) {
     return <ActivityIndicator style={{ marginTop: 50 }} />;
   }
 
   const { data, loading, refetch } = useQuery<any>(GET_RIDER, {
-    variables: { id: riderId },
+    variables: { id: rider?.id },
   });
 
   const [setStatus, { loading: statusLoading }] = useMutation(SET_STATUS);
 
   // Listen for live assignments
   useSubscription(RIDER_ASSIGNED, {
-    variables: { riderId },
+    variables: { riderId: rider.id },
     onData: ({ data }: any) => {
       const order = data.data?.riderAssigned;
       if (order) {
@@ -44,13 +51,13 @@ export default function StatusScreen() {
 
   if (loading) return <ActivityIndicator style={{ marginTop: 50 }} />;
 
-  const rider: any = data?.rider || null;
+  // const rider: any = data?.rider || null;
   const isOnline = rider.status === "AVAILABLE";
 
   const toggleStatus = async () => {
     await setStatus({
       variables: {
-        riderId,
+        riderId: rider.id,
         status: isOnline ? "OFFLINE" : "AVAILABLE",
       },
     });

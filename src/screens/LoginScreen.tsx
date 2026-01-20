@@ -1,30 +1,30 @@
 import { View, StyleSheet } from "react-native";
 import { Text, TextInput, Button, Card } from "react-native-paper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLazyQuery } from "@apollo/client/react";
 import { GET_RIDER } from "../api/queries";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../slices";
+import { authenticate } from "../slices/riderSlice";
 
 export default function LoginScreen({ onLoggedIn, navigation }: any) {
   const [riderId, setRiderId] = useState("");
+  const dispatch = useDispatch();
+  const [name, setName] = useState<string>("");
+  const rider = useSelector((state: RootState) => state.riderReducer.rider);
+  console.log({ rider });
   const [error, setError] = useState("");
 
-  const [getRider, { loading }] = useLazyQuery(GET_RIDER, {
-    onCompleted: async (data: any) => {
-      if (!data?.rider) {
-        setError("Rider not found");
-        return;
-      }
-
-      await AsyncStorage.setItem("riderId", data.rider.id);
-      onLoggedIn(data.rider.id);
-    },
-  });
+  const [getRider, { loading }] = useLazyQuery(GET_RIDER);
 
   const submit = () => {
     setError("");
     if (!riderId.trim()) return;
-    getRider({ variables: { id: riderId.trim() } });
+    getRider({ variables: { id: riderId.trim() } }).then(async (res: any) => {
+      await AsyncStorage.setItem("rider", res.data.rider);
+      dispatch(authenticate({ rider: res.data.rider }));
+    });
   };
 
   return (
