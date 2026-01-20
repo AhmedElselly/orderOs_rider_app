@@ -26,3 +26,14 @@ export const UPDATE_LOCATION = gql`
     }
   }
 `;
+
+export const riderLogin = gql`
+  mutation RiderLogin($email: String!, $password: String!) {
+    riderLogin(email: $email, password: $password) {
+      token
+      rider {
+        id
+      }
+    }
+  }
+`;
