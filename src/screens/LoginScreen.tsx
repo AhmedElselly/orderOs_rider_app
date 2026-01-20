@@ -2,26 +2,30 @@ import { View, StyleSheet } from "react-native";
 import { Text, TextInput, Button, Card } from "react-native-paper";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLazyQuery } from "@apollo/client/react";
+import { useLazyQuery, useMutation } from "@apollo/client/react";
 import { GET_RIDER } from "../api/queries";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../slices";
 import { authenticate } from "../slices/riderSlice";
+import { riderLogin } from "../api/mutations";
 
 export default function LoginScreen({ onLoggedIn, navigation }: any) {
-  const [riderId, setRiderId] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const dispatch = useDispatch();
-  const [name, setName] = useState<string>("");
+
   const rider = useSelector((state: RootState) => state.riderReducer.rider);
   console.log({ rider });
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
 
-  const [getRider, { loading }] = useLazyQuery(GET_RIDER);
+  // const [getRider, { loading }] = useLazyQuery(GET_RIDER);
+  const [mutateLogin, { loading, error }] = useMutation(riderLogin);
 
   const submit = () => {
-    setError("");
-    if (!riderId.trim()) return;
-    getRider({ variables: { id: riderId.trim() } }).then(async (res: any) => {
+    if (!email.trim()) return;
+    mutateLogin({
+      variables: { email: email.trim(), password: "123456" },
+    }).then(async (res: any) => {
       await AsyncStorage.setItem("rider", res.data.rider);
       dispatch(authenticate({ rider: res.data.rider }));
     });
@@ -33,14 +37,25 @@ export default function LoginScreen({ onLoggedIn, navigation }: any) {
         <Text variant="headlineMedium">Rider Login</Text>
 
         <TextInput
-          label="Rider ID"
+          autoCapitalize={"none"}
+          label="Rider Email"
           mode="outlined"
-          value={riderId}
-          onChangeText={setRiderId}
+          value={email}
+          onChangeText={setEmail}
           style={{ marginTop: 15 }}
         />
+        <TextInput
+          label="Password"
+          mode="outlined"
+          value={password}
+          onChangeText={setPassword}
+          style={{ marginTop: 15 }}
+          secureTextEntry
+        />
 
-        {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
+        {error ? (
+          <Text style={{ color: "red" }}>Something went wrong!</Text>
+        ) : null}
 
         <Button
           mode="contained"
